@@ -1,12 +1,15 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-import pandas as pd
 import json
 import random
 from dotenv import load_dotenv
 import os
 
+# Globals
 load_dotenv()
 google_key = os.getenv("GOOGLE_API_KEY")
+sampleCount = 50 # Sample count
+max_tries = 2 # Maximum tries to get the correct result
+dataSet = 'train.jsonl'
 
 def parseAnswers():
     """
@@ -50,12 +53,11 @@ def askGoogle(llm, fullPrompt):
         llm (ChatGoogleGenerativeAI object): the llm used
         fullPrompt (string): the full query
     Returns:
-        str: result
+        response object: res
     """
     while True:
         try:
             res = llm.invoke(fullPrompt)
-            print(res.content)
             return res
         except Exception as e:
                 print(f"error: {str(e)}")
@@ -88,8 +90,10 @@ def checkResult(prompts, answers):
     for item in prompts:
         try:
             flag = False
-            while (flag == False):
-                prompt = templatePrompt + str(item)
+            tries = 0
+            while (tries < max_tries and flag == False):
+                # Loop until the result is correct or 'max_tries' tries have exceeded
+                prompt = f"{templatePrompt} {str(item)}"
                 res = askGoogle(llm, prompt)
 
                 if (optionA in res.content and answers[int(item['index'])] == '0'):
@@ -103,24 +107,19 @@ def checkResult(prompts, answers):
                     flag = True
                 else:
                     print('incorrect, trying again')
-                    prompt = (
-                    f"I will provide you with a question and its associated explanation. "
+                    prompt = (f"I will provide you with a question and its associated explanation. "
                     f"Your task is to evaluate whether the explanation correctly supports the answer to the question. "
                     f"If the explanation is correct, respond with '<correct>'. "
                     f"If the explanation is incorrect, provide a revised answer along with an updated explanation. "
                     f"Here is the question: {str(item['goal'])} \n"
-                    f"And here is the explanation: {res.content}"
-                    )
+                    f"And here is the explanation: {res.content}")
+                tries += 1
         except Exception as e:
             print(f"error: {str(e)}")
             continue
     return correctAnsCount
 
 def main():
-    sampleCount = 50 # Count of queries to make
-    succRate = 0 # starting success rate 0%
-    dataSet = 'train.jsonl'
-
     answers = parseAnswers()
     questions = parseQuestions(dataSet)
 

@@ -79,7 +79,7 @@ def askGoogle(prompts, answers):
     return correctAnsCount
 
 def main():
-    sampleCount = 8 # Count of queries to make
+    sampleCount = 50 # Count of queries to make
     succRate = 0 # starting success rate 0%
     dataSet = 'train.jsonl'
 
