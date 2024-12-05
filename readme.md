@@ -32,6 +32,11 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install langcha
 pip install langchain-google-genai python-dotenv
 ```
 
+Add a .env file with the following content:
+```
+GOOGLE_API_KEY=YOUR_API_KEY_HERE
+```
+
 ## Usage
 
 ```python
